@@ -5,8 +5,8 @@ export class AudioProcessor {
     private analyser: AnalyserNode;
     private microphoneStream: MediaStream | null = null;
 
-    constructor(audioContext: AudioContext) {
-        this.audioContext = audioContext;
+    constructor(sampleRate=48000) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
         this.analyser = this.audioContext.createAnalyser();
     }
     getSampleRate(): number {
@@ -22,8 +22,8 @@ export class AudioProcessor {
         this.microphoneStream = stream;
         const source = this.audioContext.createMediaStreamSource(stream);
         source.connect(this.analyser);
-        this.analyser.fftSize = 256; // FFT size for analyzing frequency data
-        this.analyser.smoothingTimeConstant = 0.8;
+        this.analyser.fftSize = 512; // FFT size for analyzing frequency data
+        this.analyser.smoothingTimeConstant = 0.0;
     }
     stopRecording(): void {
         if (this.microphoneStream) {
@@ -45,76 +45,84 @@ export class AudioProcessor {
     }
 }
 
-export class BeatTracker {
-    private previousPeak: number;
-    private threshold: number = 35;
-    private peakLength: number;
+// not used yet
+export interface BeatTracker {
+    update(data: Uint8Array): number
+    currentSequence: Sequence
+    sequences: Sequence[]
+}
+
+
+// For 3 ball cascase with beanbags i get
+// µ=29.3  std=24.05
+// Threshold shoud be at least the average
+// For loud juggling, the peaks are pronounced are at least a standard deviation away.
+// Unfortunately, silent catches in between stop the sequence.
+export class RealtimeLocalMaxTracker implements BeatTracker {
+    private previousPeakIndex: number;
+    // A peak must exceed the value theshold
+    private threshold: number = 45;
     private counter: number;
     // Minimum time between throws, in seconds
-    private minDistance = 0.15; // 15;
-    // Minimum duration of a peak, in seconds
-    private minWidth = 0.01; // 5;
+    private distanceSec = 0.15;
+    private distance // in segments
     // The time after which a sequence is stopped after no new throws are detected, in seconds
-    private sequenceTermination = 0.6; // 80;
+    private stopSec = 0.6;
+    private stop: number // in segments
+
     // Minimum number of events such that the sequence is logged
     private minSequenceLength = 3;
 
-    private audioProcessor: AudioProcessor | undefined;
     // Processing
-    private batchDuration = 0;
+    private batchDuration = 0.0107 // = sampleRate / segmentSize
     // TODO getter
     public sequences: Sequence[];
     public currentSequence: Sequence;
-    
+
+    private window: number[];
+
+    private vals: number[];
+
     constructor() {
-        // this.threshold = threshold
-        this.previousPeak = 0;
+        this.previousPeakIndex = 0;
         this.counter = 0;
-        this.peakLength = 0;
         this.sequences = [];
         this.currentSequence = new Sequence();
-    }
-    connect(a: AudioProcessor) {
-        this.audioProcessor = a;
 
+        this.distance = this.convertSecondToSegements(this.distanceSec)
+        this.stop = this.convertSecondToSegements(this.stopSec)
+        this.window = new Array(Math.max(3, Math.ceil(this.distance / 2)))
+        this.vals = []
+    }
+
+    private convertSecondToSegements(sec: number): number {
+        return Math.round(sec / this.batchDuration)
+    }
+
+    connect(a: AudioProcessor) {
         const sr = a.getSampleRate();
         const batchSize = a.getFFTSize();
         this.batchDuration = batchSize / sr;
+
+        this.distance = this.convertSecondToSegements(this.distanceSec)
+        this.stop = this.convertSecondToSegements(this.stopSec)
+        this.window = new Array(Math.max(3, Math.ceil(this.distance / 2)))
     }
-    calibrateSilence(calibrations: number[][]) {
-        let s = 0;
-        let m = 0;
-        for (let i = 0; i < calibrations.length; i += 1) {
-            const subarray = calibrations[i].slice(0, 64); // TODO
-            const val =
-                subarray.reduce((sum, value) => sum + value, 0) /
-                subarray.length;
-            s += val;
-            console.debug("calibration: ", val);
-            m = Math.max(m, val);
-        }
-        console.log("final: ", s / calibrations.length);
-        console.log("max: ", m);
-    }
+
     update(data: Uint8Array): number {
-        // convert to number of chunks
-        const delta = Math.round(this.minDistance / this.batchDuration);
-        const width = Math.round(this.minWidth / this.batchDuration);
-        const tooLong = Math.round(
-            this.sequenceTermination / this.batchDuration,
-        );
-        // select freqs
-        const subArray = data.slice(54, 64);
-        const val =
-            subArray.reduce((sum, value) => sum + value, 0) / subArray.length;
+        // Average over all freqs to smooth the signal
+        // Could select a frequency band. Using everything is quite robust.
+        const slice = data.slice(10)
+        const val = slice.reduce((sum, value) => sum + value, 0) / slice.length;
+        this.vals.push(val)
+        this.window.shift();
+        this.window.push(val);
         this.counter += 1;
-        // console.debug("update: ", this.counter, val)
+        // distance in number of segments to the previous peak
+        const dist = this.counter - this.previousPeakIndex;
 
-        // distance in number of chunks to the previous peak
-        const dist = this.counter - this.previousPeak;
-
-        const restart = dist >= tooLong;
-        if (restart) {
+        if (dist >= this.stop) {
+            // no peak detected for some time, this ends the previous sequence
             const enoughThrows =
                 this.currentSequence.events.length >= this.minSequenceLength;
             if (enoughThrows) {
@@ -122,37 +130,47 @@ export class BeatTracker {
             }
             this.currentSequence = new Sequence();
         }
-        const peaking = val >= this.threshold;
-        const peakActive = this.peakLength > 0;
-        if (peaking && peakActive) {
-            // extend the current peak
-            this.peakLength += 1;
-            // TODO: if its too long, warn (or maybe even adjust threshold?)
-        } else if (peaking && dist >= delta) {
-            // start a new peak
-            this.peakLength = 1;
-            console.log("new peak ", dist * this.batchDuration);
-        } else if (peaking) {
-            console.log("too quick ", dist * this.batchDuration);
-        } else if (!peaking && this.peakLength >= width) {
-            // STOP the peak
-            console.log(
-                "peak",
-                dist * this.batchDuration,
-                this.peakLength * this.batchDuration,
-            );
-            this.currentSequence.add({
-                end: this.counter,
-                length: this.peakLength,
-            });
-            this.previousPeak = this.counter;
-            this.peakLength = 0;
-            return 1;
-        } else {
-            this.peakLength = 0;
+
+        if (val < this.threshold) {
+            // the value is to low to be considered a peak
+            return 0
         }
-        return 0;
+
+        if (dist < this.distance) {
+            // there has been a peak recently
+            return 0
+        }
+
+        const prevVal = this.window[this.window.length - 2]
+        // Check that the previous value is a local maximum
+        // Also check that the previous value is the maximum for the window
+        //  .^.
+        // .
+        //.     
+        const maxInWindow = prevVal >= Math.max(...this.window) - 1e-5;
+        const localMax = (
+            this.window[this.window.length - 3] <= prevVal && 
+            prevVal >= this.window[this.window.length - 1]
+        )
+     
+        if (localMax && maxInWindow) {
+            const avg = this.vals.reduce((sum, value) => sum + value, 0) / this.vals.length
+            const std = stdv(this.vals, avg)
+            console.debug("PEAK", this.counter, "val", val, "avg", avg, "std", std)
+            this.currentSequence.add({
+                'index': this.counter,
+            })
+            this.previousPeakIndex = this.counter
+            return 1
+        }
+
+        return 0
     }
+}
+
+function stdv(xs: number[], mu: number): number {
+    const variance = xs.map(x => (x - mu) ** 2).reduce((sum, v) => sum + v, 0) / xs.length;
+    return Math.sqrt(variance);
 }
 
 export async function handleFileUpload(file: File): Promise<Uint8Array> {

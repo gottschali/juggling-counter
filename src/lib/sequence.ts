@@ -1,6 +1,6 @@
+// todo i guess remove?
 export interface Event {
-    length: number
-    end: number
+    index: number
 }
 
 export class Sequence {

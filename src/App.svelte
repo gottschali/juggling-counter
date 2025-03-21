@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { AudioProcessor, BeatTracker, handleFileUpload } from "./lib/audio";
+    import { AudioProcessor, handleFileUpload, RealtimeLocalMaxTracker } from "./lib/audio";
+    import type { BeatTracker } from "./lib/audio";
     import Graph from "./components/Graph.svelte";
     import { Sequence } from "./lib/sequence";
     import { Confetti } from "svelte-confetti"
@@ -11,19 +12,14 @@
     let isRecording: boolean = $state(false);
     let isFileLoaded = false;
     let fileInput: HTMLInputElement;
-    let tracker = new BeatTracker();
+    let tracker = new RealtimeLocalMaxTracker();
     let reqId = -1;
 
     let sequence = $state(new Sequence());
     let sequences: Sequence[] = $state([]);
     // let debugSeq = $derived(JSON.stringify(sequence));
 
-    let calibrationCount = $state(0);
-    const calibrationSamples = 100;
 
-    onMount(() => {
-        // audioProcessor = new AudioProcessor();
-    });
     onDestroy(() => {
         if (audioProcessor) {
             audioProcessor.stopRecording();
@@ -32,18 +28,14 @@
     const toggleRecording = async () => {
         console.log("toggle recording");
         if (audioProcessor === null) {
-            const ctxt = new (window.AudioContext || window.webkitAudioContext)();
-            audioProcessor = new AudioProcessor(ctxt);
+            audioProcessor = new AudioProcessor();
         }
         if (!isRecording) {
             audioProcessor
                 .startRecording()
                 .then(() => {
                     isRecording = true;
-                    tracker.connect(audioProcessor!);
                     count = 0;
-                    calibrationCount = 0;
-
                     processAudio();
                 })
                 .catch((err) => {
@@ -58,19 +50,9 @@
         }
     };
 
-    const calibrations: number[][] = [];
     const processAudio = () => {
         if (!isRecording) return;
         if (audioProcessor === null) return;
-
-        if (calibrationCount < calibrationSamples) {
-            const data = audioProcessor.getFrequencyData();
-            calibrations.push(Array.from(data));
-            calibrationCount += 1;
-        } else if (calibrationCount == calibrationSamples) {
-            tracker.calibrateSilence(calibrations);
-            calibrationCount += 1;
-        }
 
         frequencyData = audioProcessor.getFrequencyData();
         tracker.update(frequencyData);

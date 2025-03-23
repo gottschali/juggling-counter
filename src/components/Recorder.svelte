@@ -2,8 +2,8 @@
     import { onDestroy } from "svelte";
     import { Controller } from "../lib/Controller";
 
-    let isRecording: boolean = $state(false);
     let { setCount, addSequence } = $props();
+    let isRecording: boolean = $state(false);
     let reqId = -1;
     let batchSize = 512;
     let sampleRate = 48000;

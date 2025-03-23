@@ -57,8 +57,8 @@
         frequencyData = audioProcessor.getFrequencyData();
         tracker.update(frequencyData);
         sequence = tracker.currentSequence;
-        sequences = tracker.sequences;
-        count = sequence.events.length;
+        sequences = tracker.sequences
+        count = sequence.length
         reqId = requestAnimationFrame(processAudio);
     };
     const submitFileUpload = async () => {
@@ -102,7 +102,7 @@
                 {#each sequences as seq}
                     <tr>
                         <td>{seq.time.toLocaleTimeString()}</td>
-                        <td>{seq.events.length}</td>
+                        <td>{seq.length}</td>
                     </tr>
                 {/each}
             </tbody>

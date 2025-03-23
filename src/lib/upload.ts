@@ -9,12 +9,14 @@ export async function handleFileUpload(file: File): Promise<ArrayBuffer> {
     return arrayBuffer;
 }
 
-export async function AnalyzeOffline(arrayBuffer: ArrayBuffer,
+export async function AnalyzeOffline(
+    audioContext: AudioContext, // for node compatibility
+    arrayBuffer: ArrayBuffer,
     setCount: (count: number) => void,
     addSequence: (seq: Sequence) => void,
+    offlineCtxtCls: typeof OfflineAudioContext, // for node compatibility
     batchSize = 256,
 ) {
-    const audioContext = new ((window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext)();
     // todo handle errors
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
     const sampleRate = audioBuffer.sampleRate;
@@ -22,7 +24,7 @@ export async function AnalyzeOffline(arrayBuffer: ArrayBuffer,
     const duration = audioBuffer.duration
     console.log(`uploaded audio file: ${duration}s, ${sampleRate}Hz`)
 
-    const offlineCtxt = new OfflineAudioContext(audioBuffer.numberOfChannels, length, sampleRate);
+    const offlineCtxt = new offlineCtxtCls(audioBuffer.numberOfChannels, length, sampleRate);
     const source = offlineCtxt.createBufferSource();
     source.buffer = audioBuffer;
 
@@ -39,29 +41,26 @@ export async function AnalyzeOffline(arrayBuffer: ArrayBuffer,
         offlineCtxt.suspend(i * batchDuration).then(()=> {
             const value = audioPreparer.process(batchSize)
             values.push(value)
-            console.debug(i, value)
         }).then(() => {
             offlineCtxt.resume()
         })
     }
-  
-    offlineCtxt.oncomplete = () => {
-        const mean = average(values)
-        const std  = stdv(values, mean)
-        const detector = new SimpleOnlinePeakDetector(batchDuration, mean + std / 2);
-        const sequenceTracker = new SequenceTracker(
-            detector,
-            setCount,
-            addSequence,
-            batchDuration,
-        );
-        for (let i=0; i<values.length; i++) {
-            sequenceTracker.update(values[i], false)
-        }
-        setCount(sequenceTracker.maxLength)
-    }
-
     source.start(0)
     await offlineCtxt.startRendering()
+    source.stop()
+    const mean = average(values)
+    const std  = stdv(values, mean)
+    console.log(mean, std)
+    const detector = new SimpleOnlinePeakDetector(batchDuration, mean + std / 2);
+    const sequenceTracker = new SequenceTracker(
+        detector,
+        setCount,
+        addSequence,
+        batchDuration,
+    );
+    for (let i=0; i<values.length; i++) {
+        sequenceTracker.update(values[i], false)
+    }
+    setCount(sequenceTracker.maxLength)
 }
 

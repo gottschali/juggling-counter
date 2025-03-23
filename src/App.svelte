@@ -27,7 +27,8 @@
         const file = fileInput.files?.[0];
         if (file) {
             const buffer = await handleFileUpload(file);
-            await AnalyzeOffline(buffer, setCount, addSequence);
+            const ctxt = new (window.AudioContext || (window as any).webkitAudioContext)()
+            await AnalyzeOffline(ctxt, buffer, setCount, addSequence, OfflineAudioContext);
         }
     };
 </script>

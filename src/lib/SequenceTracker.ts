@@ -41,7 +41,6 @@ export class SequenceTracker {
     update(value: number, reset = true): number {
         this.counter += 1
         const peak = this.detector.update(value)
-        console.log(value, peak)
         // distance in number of segments to the previous peak
         const dist = this.counter - this.previousPeakIndex;
         if (dist >= this.stop) {

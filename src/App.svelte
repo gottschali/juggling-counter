@@ -8,7 +8,7 @@
 
     let count: number = $state(0);
     let frequencyData: Uint8Array = $state(new Uint8Array(0));
-    let isFileLoaded = false;
+    let isFileLoaded = $state(false);
     let fileInput: HTMLInputElement;
 
     let uploadSupported = OfflineAudioContext.prototype.suspend === undefined
@@ -26,9 +26,11 @@
     const submitFileUpload = async () => {
         const file = fileInput.files?.[0];
         if (file) {
+            isFileLoaded = true
             const buffer = await handleFileUpload(file);
             const ctxt = new (window.AudioContext || (window as any).webkitAudioContext)()
-            await AnalyzeOffline(ctxt, buffer, setCount, addSequence, OfflineAudioContext);
+            await AnalyzeOffline(ctxt, buffer, setCount, addSequence, OfflineAudioContext, true);
+            isFileLoaded = false
         }
     };
 </script>
@@ -47,7 +49,7 @@
         <div
             style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
         >
-            {#if count % 10 == 0}
+            {#if count % 10 == 0 && !isFileLoaded}
                 <Confetti amount={count} rounded={true} />
             {/if}
         </div>

@@ -15,6 +15,7 @@ export async function AnalyzeOffline(
     setCount: (count: number) => void,
     addSequence: (seq: Sequence) => void,
     offlineCtxtCls: typeof OfflineAudioContext, // for node compatibility
+    animate = false,
     batchSize = 256,
 ) {
     // todo handle errors
@@ -59,6 +60,10 @@ export async function AnalyzeOffline(
         batchDuration,
     );
     for (let i=0; i<values.length; i++) {
+        if (animate && i % 20 == 0) {
+            // to make it visually more appealing :)
+            await new Promise(resolve => setTimeout(resolve, 1));
+        }
         sequenceTracker.update(values[i], false)
     }
     setCount(sequenceTracker.maxLength)

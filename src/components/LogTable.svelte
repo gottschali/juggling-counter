@@ -26,13 +26,14 @@
 
 <div style:justify-content="center">
     <table>
+        <caption>Practice Log</caption>
         <thead>
             <tr>
-                <td title="length of the juggling sequence (in seconds)">t</td>
-                <td title="number of catches in the sequence">n</td>
-                <td title="average time between catches (in seconds)">µ</td>
-                <td title="standard devition of time between catches (in seconds)">σ</td>
-                <td title="custom pattern of the name of the uploaded file"></td>
+                <th title="length of the juggling sequence (in seconds)">t</th>
+                <th title="number of catches in the sequence">n</th>
+                <th title="average time between catches (in seconds)">µ</th>
+                <th title="standard devition of time between catches (in seconds)">σ</th>
+                <th title="custom pattern of the name of the uploaded file"></th>
             </tr>
         </thead>
         <tbody>
@@ -51,3 +52,30 @@
         </tbody>
     </table>
 </div>
+
+<style>
+
+
+table {
+	display: table;
+  border-spacing: 2px;
+  border-collapse: separate;
+  box-sizing: border-box;
+  text-indent: 0;
+}
+
+td {
+	font-family: 'Open Sans', sans-serif;
+	line-height: 1.5;
+}
+
+thead {
+	border-block-end: 2px solid;
+	background: #f9f9f9;
+}
+
+th,
+td {
+	border-bottom: 1px solid #f9f9f9;
+}
+</style>

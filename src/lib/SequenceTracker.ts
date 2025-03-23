@@ -17,6 +17,7 @@ export class SequenceTracker {
     addSequence: (seq: Sequence) => void;
 
     private maxSequenceLength = 0;
+    batchDuration: number;
 
     get maxLength(): number {
         return this.maxSequenceLength;
@@ -33,6 +34,7 @@ export class SequenceTracker {
         this.detector = detector;
         this.setCount = setCount;
         this.addSequence = addSequence;
+        this.batchDuration = batchDuration;
         this.stopSec = stopSec;
         this.minSequenceLength = minSequenceLength;
         this.stop = Math.round(this.stopSec / batchDuration);
@@ -47,6 +49,7 @@ export class SequenceTracker {
             // no peak detected for some time, this ends the previous sequence
             if (this.currentSequence.length >= this.minSequenceLength) {
                 this.sequences.push(this.currentSequence);
+                this.currentSequence.meta.batchDuration = this.batchDuration
                 this.addSequence(this.currentSequence)
                 this.maxSequenceLength = Math.max(this.maxSequenceLength, this.currentSequence.length)
             }

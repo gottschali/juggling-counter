@@ -9,6 +9,7 @@ export class Sequence {
     public time: Date
     public endTime: Date
     public pattern: string
+    public meta: {batchDuration?: number} = {}
 
     constructor(pattern = "") {
         this.pattern = pattern

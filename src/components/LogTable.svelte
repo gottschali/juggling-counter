@@ -25,6 +25,7 @@
 </script>
 
 <div style:justify-content="center">
+    {#if sequences.length > 0}
     <table>
         <caption>Practice Log</caption>
         <thead>
@@ -51,6 +52,7 @@
             {/each}
         </tbody>
     </table>
+    {/if}
 </div>
 
 <style>

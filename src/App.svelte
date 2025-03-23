@@ -1,13 +1,11 @@
 <script lang="ts">
     import { AnalyzeOffline, handleFileUpload } from "./lib/upload";
-    import Graph from "./components/Graph.svelte";
     import { Sequence } from "./lib/sequence";
     import { Confetti } from "svelte-confetti";
     import LogTable from "./components/LogTable.svelte";
     import MicrophoneCounter from "./components/MicrophoneCounter.svelte";
 
     let count: number = $state(0);
-    let frequencyData: Uint8Array = $state(new Uint8Array(0));
     let isFileLoaded = $state(false);
     let fileInput: HTMLInputElement;
 
@@ -60,11 +58,8 @@
             {/if}
         </div>
     </div>
-    <h2>{count}</h2>
+    <h2 title="current number of catches">{count}</h2>
     <LogTable {sequences} />
-    {#if frequencyData.length > 0}
-        <Graph data={frequencyData} />
-    {/if}
 </main>
 
 <style>

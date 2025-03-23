@@ -5,6 +5,7 @@
     import Graph from "./components/Graph.svelte";
     import { Sequence } from "./lib/sequence";
     import { Confetti } from "svelte-confetti"
+    import LogTable from "./components/LogTable.svelte";
 
     let count: number = $state(0);
     let audioProcessor: AudioProcessor | null = $state(null);
@@ -93,21 +94,7 @@
   
     </div>
     <h2>{count}</h2>
-    <div style:justify-content="center">
-        <table>
-            <thead>
-                <tr><td>time</td><td>n</td></tr>
-            </thead>
-            <tbody>
-                {#each sequences as seq}
-                    <tr>
-                        <td>{seq.time.toLocaleTimeString()}</td>
-                        <td>{seq.length}</td>
-                    </tr>
-                {/each}
-            </tbody>
-        </table>
-    </div>
+    <LogTable sequences={sequences}/>
     {#if frequencyData.length > 0}
         <Graph data={frequencyData} />
     {/if}

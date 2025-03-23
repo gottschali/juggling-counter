@@ -30,13 +30,15 @@ formatCases.forEach((fmt) => {
     });
 });
 
-// long-running, pass timeout value or figure out how to run it faster
-// test('3b100', async () => {
-//     const t = await countThrows("/home/ali/Code/lab/juggle-spectrogram/christian_3b100.wav")
-//     expect(t).toEqual(100)
-// })
+const approximateTests = [
+    // [lib/errors.js] Unexpected Rust error [Error: Panic in async function] { code: 'GenericFailure' }
+    // { name: '3b100', file: 'data/christian_3b100.mp3', expected: 100, delta: 7},
+    { name: '5b50', file: 'data/christian_5b50.mp3', expected: 50, delta: 5},
+];
 
-// test('5b50', async () => {
-//     const t = await countThrows("/home/ali/Code/lab/juggle-spectrogram/christian_5b50.wav")
-//     expect(t).toEqual(50)
-// })
+approximateTests.forEach(({ name, file, expected, delta }) => {
+    test(name, async () => {
+        const t = await countThrows(file);
+        expect(t).closeTo(expected, delta)
+    });
+});

@@ -24,17 +24,17 @@ export async function countThrows(filePath: string): Promise<number> {
     await AnalyzeOffline(
         ctxt,
         arrayBuffer as ArrayBuffer,
-        (c) => { console.log(c); },
+        (c) => {},
         (seq) => seqs.push(seq),
         OfflineAudioContext
     );
+    ctxt.close()
     let throws = 0;
     seqs.forEach((s: Sequence) => {
         console.log(s)
         throws += s.length
     })
     console.log("final count: ", throws)
-    ctxt.close()
     return throws
 }
 
@@ -64,13 +64,3 @@ async function simulateFFT(filePath: string): Promise<number[][]> {
     writeFileSync(jsonFileName, jsonFreqs, 'utf8');
     return freqs;
 }
-
-
-async function main() {
-    await countThrows("/home/ali/Code/lab/juggle-spectrogram/five_ball_50.mp3")
-    // [lib/errors.js] Unexpected Rust error [Error: Panic in async function] { code: 'GenericFailure' }
-    // await countThrows("/home/ali/Code/lab/juggle-spectrogram/christian_5b50.wav")
-    // simulateFFT("/home/ali/Code/lab/juggle-spectrogram/christian_5b50.wav")
-}
-
-main()

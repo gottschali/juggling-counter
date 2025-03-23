@@ -16,7 +16,7 @@ async function createSource(filePath: string, ctxt: AudioContext): Promise<Audio
     return src
 }
 
-export async function countThrows(filePath: string): Promise<number> {
+export async function sequences(filePath: string) : Promise<Sequence[]> {
     const buf = readFileSync(filePath)
     const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
     let seqs: Sequence[] = [];
@@ -29,6 +29,11 @@ export async function countThrows(filePath: string): Promise<number> {
         OfflineAudioContext
     );
     ctxt.close()
+    return seqs
+}
+
+export async function countThrows(filePath: string): Promise<number> {
+    const seqs = await sequences(filePath)
     let throws = 0;
     seqs.forEach((s: Sequence) => {
         console.log(s)

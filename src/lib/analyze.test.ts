@@ -1,14 +1,18 @@
 import { expect, test } from 'vitest';
-import { countThrows } from './analyze';
+import { countThrows, sequences } from './analyze';
 
 const exactCases = [
-    { name: '3b6c', file: 'data/3b6c.wav', expected: 6 },
-    { name: '5b10c', file: 'data/5b10c.wav', expected: 10 }
+    { name: '3b6c', file: 'data/3b6c.wav', expected: [6] },
+    { name: '5b10c', file: 'data/5b10c.wav', expected: [10] },
+    { name: 'loud3b15c', file: 'data/loud3b15c.mp3', expected: [15] },
+    { name: 'loud3b15c', file: 'data/fast3b15c.mp3', expected: [15] },
+    { name: 'slow3b', file: 'data/slow3b.mp3', expected: [15] },
+    { name: '3b3x3', file: 'data/3b3x3.mp3', expected: [3, 3, 3] },
 ];
 
 exactCases.forEach(({ name, file, expected }) => {
     test(name, async () => {
-        const t = await countThrows(file);
+        const t = (await sequences(file)).map(s => s.length)
         expect(t).toEqual(expected);
     });
 });

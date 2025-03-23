@@ -7,12 +7,14 @@ export interface Event {
 export class Sequence {
     private events: Event[]
     public time: Date
+    public endTime: Date
     public pattern: string
 
     constructor(pattern = "") {
         this.pattern = pattern
         this.events = []
         this.time = new Date()
+        this.endTime = this.time
     }
 
     get length(): number {
@@ -25,6 +27,7 @@ export class Sequence {
 
     add(e: Event) {
         this.events.push(e)
+        this.endTime = new Date()
     }
 
 }

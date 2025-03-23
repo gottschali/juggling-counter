@@ -16,7 +16,7 @@
     const setCount = (c: number) => {
         count = c;
     };
-    const addSequence = (s: Sequence) => sequences.push(s);
+    const addSequence = (s: Sequence) => sequences = new Array(s, ...sequences);
 
     // could display live statistics for the current sequence
     // let sequence = $state(new Sequence());
@@ -29,7 +29,13 @@
             isFileLoaded = true
             const buffer = await handleFileUpload(file);
             const ctxt = new (window.AudioContext || (window as any).webkitAudioContext)()
-            await AnalyzeOffline(ctxt, buffer, setCount, addSequence, OfflineAudioContext, true);
+            await AnalyzeOffline(ctxt, buffer, setCount,
+             (s: Sequence) => {
+                s.pattern = file.name
+                s.endTime = s.time // not correct for uploaded
+                addSequence(s)
+             },
+             OfflineAudioContext, true);
             isFileLoaded = false
         }
     };

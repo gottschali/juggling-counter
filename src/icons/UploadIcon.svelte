@@ -7,12 +7,3 @@
         ><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"></path></g
     ></svg
 >
-
-<style>
-    svg {
-        position: relative;
-        top: 0.5em;
-        height: 1.5em;
-        width: 1.5em;
-    }
-</style>

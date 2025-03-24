@@ -1,8 +1,10 @@
 <script lang="ts">
+    import { fade, fly } from "svelte/transition";
+    import DeleteIcon from "../icons/DeleteIcon.svelte";
     import { average, stdv } from "../lib/mathUtils";
     import type { Sequence } from "../lib/sequence";
 
-    let { sequences } = $props();
+    let { sequences, deleteSequence } = $props();
 
     function mu(s: Sequence): number {
         const indices = s.getEvents().map((e) => e.index);
@@ -45,12 +47,13 @@
                     >
                     <th title="custom pattern of the name of the uploaded file"
                     ></th>
+                    <th title="delete a sequence">x</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- idea: add a divider or sth when the pattern changes-->
-                {#each sequences as seq}
-                    <tr>
+                {#each sequences as seq, i (i)}
+                    <tr out:fade>
                         <td title={seq.time.toLocaleTimeString()}
                             >{((seq.endTime - seq.time) / 1000).toFixed(2)}s</td
                         >
@@ -58,6 +61,8 @@
                         <td>{mu(seq).toFixed(2)}</td>
                         <td>{sigma(seq).toFixed(2)}</td>
                         <td>{seq.pattern}</td>
+                        <td onclick={() => deleteSequence(i)}><DeleteIcon /></td
+                        >
                     </tr>
                 {/each}
             </tbody>

@@ -21,6 +21,10 @@
     // let sequence = $state(new Sequence());
     let sequences: Sequence[] = $state([]);
     // let debugSeq = $derived(JSON.stringify(sequence));
+
+    const deleteSequence = (i: number) => {
+        sequences.splice(i, 1);
+    }
 </script>
 
 <main>
@@ -55,7 +59,7 @@
         {/if}
     </div>
     <h2 title="current number of catches">{count}</h2>
-    <LogTable {sequences} />
+    <LogTable {sequences} {deleteSequence}/>
 </main>
 
 <style>

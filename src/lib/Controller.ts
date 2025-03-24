@@ -18,7 +18,7 @@ export class Controller {
     async startRecording(
         setCount: (count: number) => void,
         addSequence: (seq: Sequence) => void,
-        batchSize = 512,
+        batchSize = 256,
         sampleRate = 48000,
     ): Promise<any> {
         this.batchSize = batchSize
@@ -26,7 +26,7 @@ export class Controller {
         const mediaStream = await this.audioProcessor.startRecording()
         this.audioPreparer = new AudioPreparer(mediaStream)
         const batchDuration = this.batchSize / sampleRate
-        this.detector = new SimpleOnlinePeakDetector(batchDuration)
+        this.detector = new SimpleOnlinePeakDetector(batchDuration, {dynamicThreshold: true})
         this.sequenceTracker = new SequenceTracker(
             this.detector,
             setCount,
@@ -35,7 +35,7 @@ export class Controller {
         )
     }
 
-    processAudio(batchSize = 512) {
+    processAudio(batchSize = 256) {
         const value = this.audioPreparer!.process(batchSize)
         this.sequenceTracker.update(value)
     }

@@ -30,7 +30,7 @@ export async function AnalyzeOffline(
     source.buffer = audioBuffer;
 
     const batchDuration = batchSize / sampleRate;
-    
+
     const audioPreparer = new AudioPreparer(source);
     const totalBatches = Math.ceil(audioBuffer.length / batchSize);
     // source.connect(offlineCtxt.destination);
@@ -38,8 +38,8 @@ export async function AnalyzeOffline(
     // suspend is not supported on Firefox
     // source.start(time)
     const values = new Array<number>()
-    for (let i=0; i<totalBatches; i++) {
-        offlineCtxt.suspend(i * batchDuration).then(()=> {
+    for (let i = 0; i < totalBatches; i++) {
+        offlineCtxt.suspend(i * batchDuration).then(() => {
             const value = audioPreparer.process(batchSize)
             values.push(value)
         }).then(() => {
@@ -50,16 +50,16 @@ export async function AnalyzeOffline(
     await offlineCtxt.startRendering()
     source.stop()
     const mean = average(values)
-    const std  = stdv(values, mean)
-    console.log(mean, std)
-    const detector = new SimpleOnlinePeakDetector(batchDuration, mean + std / 2);
+    const std = stdv(values, mean)
+    console.log("mean", mean, "std", std)
+    const detector = new SimpleOnlinePeakDetector(batchDuration, { threshold: mean + std / 2 });
     const sequenceTracker = new SequenceTracker(
         detector,
         setCount,
         addSequence,
         batchDuration,
     );
-    for (let i=0; i<values.length; i++) {
+    for (let i = 0; i < values.length; i++) {
         if (animate && i % 20 == 0) {
             // to make it visually more appealing :)
             await new Promise(resolve => setTimeout(resolve, 1));

@@ -1,4 +1,4 @@
-import { average } from "./mathUtils";
+import { average, stdv } from "./mathUtils";
 import type { PeakDetector } from "./PeakDetector";
 
 // For 3 ball cascase with beanbags i get
@@ -18,9 +18,15 @@ export class SimpleOnlinePeakDetector implements PeakDetector {
     // Processing
     private window: number[];
     private signal: number[];
+    dynamicThreshold: boolean;
 
-    constructor(batchDuration: number, threshold = 45, distanceSec = 0.15) {
+    constructor(batchDuration: number, {
+        threshold = 40,
+        distanceSec = 0.15,
+        dynamicThreshold = false
+    }) {
         this.threshold = threshold
+        this.dynamicThreshold = dynamicThreshold
         this.distanceSec = distanceSec
         this.previousPeakIndex = 0;
         this.counter = 0;
@@ -63,8 +69,13 @@ export class SimpleOnlinePeakDetector implements PeakDetector {
 
         if (localMax && maxInWindow) {
             const avg = average(this.signal)
-            console.debug("PEAK", this.counter, "val", value, "avg", avg)
+            const std = stdv(this.signal, avg)
+            if (this.dynamicThreshold) {
+                this.threshold = avg + std / 2
+            }
+            console.debug("PEAK", this.counter, "val", value, "avg", avg, "std", std, "tau", this.threshold)
             this.previousPeakIndex = this.counter
+
             return 1
         }
 

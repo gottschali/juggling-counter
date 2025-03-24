@@ -1,9 +1,11 @@
 <script lang="ts">
     import { onDestroy } from "svelte";
     import { Controller } from "../lib/Controller";
+    import type { Sequence } from "../lib/sequence";
 
     let { setCount, addSequence } = $props();
     let isRecording: boolean = $state(false);
+    let pattern = $state("")
     let reqId = -1;
     let batchSize = 512;
     let sampleRate = 48000;
@@ -22,7 +24,10 @@
             controller
                 .startRecording(
                     setCount,
-                    addSequence,
+                    (s: Sequence) => {
+                        s.pattern = pattern
+                        addSequence(s)
+                    },
                     batchSize,
                     sampleRate,
                 )
@@ -55,11 +60,13 @@ onclick={toggleRecording}
 >
 {isRecording ? "Stop Recording" : "Start Recording"}
 </button>
-
+<form>
+    <input bind:value={pattern} placeholder="Enter a pattern name"/>
+</form>
 <style>
-    button {
+    button, input {
         padding: 10px 20px;
-        margin: 10px;
+        margin: 5px;
         cursor: pointer;
     }
     button::before {

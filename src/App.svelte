@@ -24,7 +24,7 @@
 
     const deleteSequence = (i: number) => {
         sequences.splice(i, 1);
-    }
+    };
 </script>
 
 <main>
@@ -45,12 +45,9 @@
             <i>regular</i> enough.
         </li>
     </ul>
-    <div>
-        <Recorder {setCount} {addSequence} />
-    </div>
-    <div>
-        <Upload {setCount} {addSequence} />
-    </div>
+    <Recorder {setCount} {addSequence} />
+    <br />
+    <Upload {setCount} {addSequence} />
     <div
         style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
     >
@@ -59,7 +56,7 @@
         {/if}
     </div>
     <h2 title="current number of catches">{count}</h2>
-    <LogTable {sequences} {deleteSequence}/>
+    <LogTable {sequences} {deleteSequence} />
 </main>
 
 <style>

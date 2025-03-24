@@ -31,7 +31,6 @@
         }
     };
 </script>
-
 <label
     for="file-upload"
     class="custom-file-upload"
@@ -48,7 +47,6 @@
     onchange={submitFileUpload}
     disabled={uploadSupported}
 />
-
 <style>
     input[type="file"] {
         display: none;
@@ -56,7 +54,8 @@
     .custom-file-upload {
         border-radius: 8px;
         border: 1px solid transparent;
-        padding: 0.6em 1.2em;
+        padding: 10px 20px;
+        margin: 10px;
         font-size: 1em;
         font-weight: 500;
         font-family: inherit;

@@ -46,7 +46,7 @@
                         >σ</th
                     >
                     <th title="custom pattern of the name of the uploaded file"
-                    ></th>
+                    >p</th>
                     <th title="delete a sequence">x</th>
                 </tr>
             </thead>

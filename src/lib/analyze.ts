@@ -1,7 +1,7 @@
 import { AudioContext, OfflineAudioContext } from 'node-web-audio-api';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { AnalyzeOffline } from "./upload";
+import { AnalyzeOffline } from "./SimpleOfflinePeakDetector";
 import { Sequence } from "./sequence";
 
 // npx tsx analyze.ts

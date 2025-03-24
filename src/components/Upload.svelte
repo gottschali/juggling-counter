@@ -5,8 +5,11 @@
     let { setCount, addSequence } = $props();
     let uploadSupported = OfflineAudioContext.prototype.suspend === undefined;
     let fileInput: HTMLInputElement;
-    import { AnalyzeOffline, handleFileUpload } from "../lib/upload";
-
+    import { AnalyzeOffline } from "../lib/SimpleOfflinePeakDetector";
+    const handleFileUpload = async function (file: File): Promise<ArrayBuffer> {
+        const arrayBuffer = await file.arrayBuffer();
+        return arrayBuffer;
+    };
     const submitFileUpload = async () => {
         const file = fileInput.files?.[0];
         if (file) {

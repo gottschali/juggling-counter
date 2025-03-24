@@ -4,10 +4,6 @@ import type { Sequence } from "./sequence";
 import { SequenceTracker } from "./SequenceTracker";
 import { SimpleOnlinePeakDetector } from "./SimpleOnlinePeakDetector";
 
-export async function handleFileUpload(file: File): Promise<ArrayBuffer> {
-    const arrayBuffer = await file.arrayBuffer();
-    return arrayBuffer;
-}
 
 export async function AnalyzeOffline(
     audioContext: AudioContext, // for node compatibility

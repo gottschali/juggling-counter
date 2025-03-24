@@ -3,7 +3,6 @@
     import { Sequence } from "../lib/sequence";
 
     let { setCount, addSequence } = $props();
-    let uploadSupported = OfflineAudioContext.prototype.suspend === undefined;
     let fileInput: HTMLInputElement;
     import { AnalyzeOffline } from "../lib/SimpleOfflinePeakDetector";
     const handleFileUpload = async function (file: File): Promise<ArrayBuffer> {
@@ -11,6 +10,12 @@
         return arrayBuffer;
     };
     const submitFileUpload = async () => {
+        try {
+            OfflineAudioContext.prototype.suspend(0)
+        } catch (e) {
+            alert("Unfortunately this feature is not supported in your browser." +
+            "https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext/suspend#browser_compatibility")
+        }
         const file = fileInput.files?.[0];
         if (file) {
             const buffer = await handleFileUpload(file);
@@ -45,7 +50,6 @@
     bind:this={fileInput}
     accept="audio/*"
     onchange={submitFileUpload}
-    disabled={uploadSupported}
 />
 <style>
     input[type="file"] {

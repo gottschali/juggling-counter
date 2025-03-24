@@ -86,7 +86,6 @@
 
     thead {
         border-block-end: 2px solid;
-        background: #f9f9f9;
     }
 
     th,

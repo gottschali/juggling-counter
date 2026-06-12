@@ -2,6 +2,18 @@
 
 Goal: count juggling throws in real time, only using the microphone. Analyse your throwing rhythm and track your progress.
 
+## Detection
+
+So far, we use a simple peak detection algorithm.
+There is also an experimental *rhythm tracker* (`src/lib/tracker/`): a pure
+state machine that exploits the periodicity of juggling patterns. It predicts
+when the next catch should occur, accepts quiet catches inside that window at a
+lower threshold, rejects off-beat noise, backfills isolated misses (with
+evidence), and only ends a run after several silent periods. Enable it by
+passing `detectorKind: "rhythm"` to `Controller.startRecording`. It consumes a
+generic probability stream, so it is also the integration point for a future
+ML onset model.
+
 ## Base template: Svelte + TS + Vite
 
 This template should help get you started developing with Svelte and TypeScript in Vite.
